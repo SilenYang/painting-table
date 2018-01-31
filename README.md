@@ -21,7 +21,8 @@ import TableConsole from 'table_console'
 ```js
 TableConsole(tableData, options)
 ```
-tableData是一个需要展示的数组列表，其中每项为一列数据，例如：
+
+tableData是一个需要展示的数组列表，其中每项为一列数据，例如：
 ```js
 tableData:
 [{
@@ -32,6 +33,7 @@ tableData:
     size: '12KB'
 }]
 ```
+
 options选项为控制每一项需要显示的字段：
 ```js
 options:
