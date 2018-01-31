@@ -1,6 +1,6 @@
 {
   "name": "table_console",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "a simple library for drawing tables in the terminal/console",
   "main": "index.js",
   "scripts": {
