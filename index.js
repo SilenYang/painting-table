@@ -58,10 +58,9 @@ module.exports = (data, options) => {
         min_width: Field_length(field)
     })
 
+    // 获取字段宽度
     showField.forEach(field => {
         data.forEach(item => {
-            let showItem = item[field.title]
-            item[field.title] = field.title !== 'size' ? showItem : showItem > 1024 ? `${(Number(showItem) / 1024).toFixed(2)}KB` : `${showItem}B`
             const len = Field_length(item[field.title])
             field.min_width = field.min_width >= len ? field.min_width : len % 2 ? len + 1 : len
         })
