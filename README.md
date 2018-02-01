@@ -1,5 +1,5 @@
-# table_console
-a library for drawing table in the terminal or console.
+# painting-table
+a library for painting a table in terminal or browser console.
 
 
 # Install
