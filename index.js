@@ -1,4 +1,5 @@
 const chalk = require('chalk')
+const config = require('./config')
 
 const Color_Text = (text, color = 'red') => chalk[color](text)
 
@@ -16,38 +17,45 @@ const Field_length = (field) => {
     return len % 2 ? len + 1 : len
 }
 
-// header
-const draw_head = (showField) => {
-    let headStr = '',
-        headerUpStr = '',
-        headerDownStr = '',
-        headerContentStr = ''
+class Table {
+    constructor(showField) {
+        this.env = typeof window === "undefined" ? 'global' : 'window';
+        this.showField = showField
+        this.borders = {
+            topLine: '',
+            centerLine: '',
+            bottomLine: '',
+        }
+    }
 
-    showField.forEach((item, index) => {
-        headerUpStr += `${Repeat_Text(' ─', item.min_width / 2 + 2)}${index === showField.length - 1 ? '' : ' ┬'}`
-        headerDownStr += `${Repeat_Text(' ─', item.min_width / 2 + 2)}${index === showField.length - 1 ? '' : ' ┼'}`
-        headerContentStr += `  ${Color_Text(Repair_text(item.title, item.min_width),'green')}  ${index === showField.length - 1 ? '' : ' |'}`
-    })
-
-    headStr += `  ┌${headerUpStr} ┐\n  |${headerContentStr} |\n  ├${headerDownStr} ┤\n`
-
-    return headStr
-}
-
-// body
-const draw_body = (data, showField) => {
-    let bodyStr = '',
-        bottomStr = ''
-    data.forEach((item, index) => {
-        bodyStr += `  |`
-        showField.forEach((field, idx) => {
-            index === 0 && (bottomStr += `${Repeat_Text(' ─', field.min_width / 2 + 2)}${idx === showField.length - 1 ? '' : ' ┴'}`)
-
-            bodyStr += `  ${Repair_text(item[field.title], field.min_width)}   |${idx === showField.length - 1 ? '\n' : ''}`
+    /* 
+     *   type: the position of border
+     *       top/center/bottom
+     */
+    getBorderLine(type) {
+        if (this.borders[`${type}Line`]) return this.borders[`${type}Line`]
+        this.borders[`${type}Line`] = `  ${config[this.env][type].l}`
+        this.showField.forEach((item, index) => {
+            this.borders[`${type}Line`] += `${Repeat_Text(' ' + config[this.env][type].h, item.min_width / 2 + 2)}${index === this.showField.length - 1 ? '' : ' ' + config[this.env][type].c}`
         })
-        bodyStr += index !== data.length - 1 ? '' : `  └${bottomStr} ┘`
-    })
-    return bodyStr
+        this.borders[`${type}Line`] += ` ${config[this.env][type].r}\n`
+        return this.borders[`${type}Line`]
+    }
+
+    // data rows
+    getRow(row) {
+        let rowStr = `  ${config[this.env]['center'].v}`
+        this.showField.forEach((item, index) => {
+            rowStr += `  ${Repair_text(row ? row[item.title] : item.title, item.min_width)}   ${config[this.env]['center'].v}${index === this.showField.length - 1 ? '\n' : ''}`
+        })
+        return rowStr
+    }
+
+    getHeader() {
+        let headerStr = ''
+        headerStr += this.getBorderLine('top') + this.getRow() + this.getBorderLine('center')
+        return headerStr
+    }
 }
 
 module.exports = (data, options) => {
@@ -67,7 +75,12 @@ module.exports = (data, options) => {
     })
 
     let tableStr = ''
-    tableStr += draw_head(showField)
-    tableStr += draw_body(data, showField)
+    const table = new Table(showField)
+
+    tableStr += table.getHeader()
+    data.forEach((item, index) => {
+        tableStr += table.getRow(item)
+        tableStr += index === data.length - 1 ? table.getBorderLine('bottom') : table.getBorderLine('center')
+    })
     console.log(tableStr)
 }
