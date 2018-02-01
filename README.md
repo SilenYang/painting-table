@@ -4,22 +4,22 @@ a library for drawing table in the terminal or console.
 
 # Install
 
-> **npm install --save table_console**
+> **npm install --save painting-table**
 
 # Import
 
 ```js
-const TableConsole = require('table_console')
+const Table = require('painting-table')
 
 //or
 
-import TableConsole from 'table_console'
+import Table from 'painting-table'
 ```
 
 # Usage
 
 ```js
-TableConsole(tableData, options)
+Table(tableData, options)
 ```
 
 tableData是一个需要展示的数组列表，其中每项为一列数据，例如：
