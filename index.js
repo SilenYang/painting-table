@@ -82,5 +82,6 @@ module.exports = (data, options) => {
         tableStr += table.getRow(item)
         tableStr += index === data.length - 1 ? table.getBorderLine('bottom') : table.getBorderLine('center')
     })
+
     console.log(tableStr)
 }

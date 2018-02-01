@@ -42,9 +42,13 @@ options:
     size: true,
 }
 ```
-经过处理后会在terminal或控制台打印出结果
+经过处理后会在terminal或浏览器控制台打印出结果:
 
-![TableConsole](./table.jpg)
+### Terminal
+![Terminal](./images/terminal_table.jpg)
+
+### Browser Console
+![Browser Console](./images/console_table.jpg)
 
 # LICENSE
 
