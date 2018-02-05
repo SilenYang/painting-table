@@ -29,24 +29,23 @@ class Table {
     }
 
     /* 
-     *   type: the position of border
-     *       top/center/bottom
+     *   三种 border 的位置：top/center/bottom
      */
     getBorderLine(type) {
         if (this.borders[`${type}Line`]) return this.borders[`${type}Line`]
         this.borders[`${type}Line`] = `  ${config[this.env][type].l}`
         this.showField.forEach((item, index) => {
-            this.borders[`${type}Line`] += `${Repeat_Text(' ' + config[this.env][type].h, item.min_width / 2 + 2)}${index === this.showField.length - 1 ? '' : ' ' + config[this.env][type].c}`
+            this.borders[`${type}Line`] += `${Repeat_Text(' ' + config[this.env][type].h, item.width / 2 + 2)}${index === this.showField.length - 1 ? '' : ' ' + config[this.env][type].c}`
         })
         this.borders[`${type}Line`] += ` ${config[this.env][type].r}\n`
         return this.borders[`${type}Line`]
     }
 
-    // data rows
+    // 数据行
     getRow(row) {
         let rowStr = `  ${config[this.env]['center'].v}`
         this.showField.forEach((item, index) => {
-            rowStr += `  ${Repair_text(row ? row[item.title] : item.title, item.min_width)}   ${config[this.env]['center'].v}${index === this.showField.length - 1 ? '\n' : ''}`
+            rowStr += `  ${row ? Repair_text(row[item.originTitle], item.width) : Color_Text(Repair_text(item.title, item.width), 'green')}   ${config[this.env]['center'].v}${index === this.showField.length - 1 ? '\n' : ''}`
         })
         return rowStr
     }
@@ -58,30 +57,78 @@ class Table {
     }
 }
 
-module.exports = (data, options) => {
-    // 获取显示字段
-    const showField = []
-    for (let field in options) options[field] && showField.push({
-        title: field,
-        min_width: Field_length(field)
-    })
+class Options {
+    constructor(data, options) {
+        this.excludes = options.excludes || []
+        this.includes = options.includes || []
+        this.rename = options.rename || {}
+        this.data = data
+    }
 
-    // 获取字段宽度
-    showField.forEach(field => {
-        data.forEach(item => {
-            const len = Field_length(item[field.title])
-            field.min_width = field.min_width >= len ? field.min_width : len % 2 ? len + 1 : len
+    notEmpty(obj) {
+        if (obj instanceof Array) return obj.length
+        else return Object.keys(obj).length
+    }
+
+    getFields() {
+        let fields = []
+            // 生成配置数组
+        this.data.forEach(field => {
+            for (let key in field) {
+                fields.some(item => item.originTitle === key) ?
+                    (fields = fields.map(item => {
+                        if (item.originTitle === key) {
+                            const len = Field_length(field[item.originTitle])
+                            item.width = item.width >= len ? item.width : len % 2 ? len + 1 : len
+                        }
+                        return item
+                    })) :
+                    fields.push({
+                        title: this.rename[key] || key,
+                        originTitle: key,
+                        width: Field_length(field[key] || this.rename[key] || key)
+                    })
+            }
         })
-    })
 
-    let tableStr = ''
+        // 按配置项进行筛选
+        if (this.notEmpty(this.includes)) {
+            switch (this.includes.constructor) {
+                case Array:
+                    fields = fields.filter(filed => this.includes.includes(filed.originTitle))
+                    break
+                case Object:
+                    fields = fields.filter(filed => this.includes[filed.originTitle])
+                    break
+                default:
+                    break
+            }
+        } else if (!this.notEmpty(this.includes) && this.notEmpty(this.excludes)) {
+            switch (this.excludes.constructor) {
+                case Array:
+                    fields = fields.filter(filed => !this.excludes.includes(filed.originTitle))
+                    break
+                case Object:
+                    fields = fields.filter(filed => !this.excludes[filed.originTitle])
+                    break
+                default:
+                    break
+            }
+        }
+
+        return fields
+    }
+}
+
+module.exports = (data, options) => {
+    const showField = new Options(data, options).getFields()
     const table = new Table(showField)
 
-    tableStr += table.getHeader()
+    let tableStr = table.getHeader()
     data.forEach((item, index) => {
         tableStr += table.getRow(item)
         tableStr += index === data.length - 1 ? table.getBorderLine('bottom') : table.getBorderLine('center')
     })
 
-    console.log(tableStr)
+    return tableStr
 }
